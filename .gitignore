@@ -1,2 +1,6 @@
 __pycache__/
 data/
+my_test.ipynb
+processed_tweet_data_africa.csv
+processed_tweet_data_global.csv
+processed_tweet_data.csv
