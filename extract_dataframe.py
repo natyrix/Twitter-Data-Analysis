@@ -183,9 +183,8 @@ class TweetDfExtractor:
         df = pd.DataFrame(data=data, columns=columns)
 
         if save:
-            df.to_csv('processed_tweet_data_africa.csv', index=False)
+            df.to_csv('processed_tweet_data_global.csv', index=False)
             print('File Successfully Saved.!!!')
-
         return df
 
 
