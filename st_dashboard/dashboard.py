@@ -4,7 +4,7 @@ import streamlit as st
 import altair as alt
 from wordcloud import WordCloud
 import plotly.express as px
-from add_data import db_execute_fetch #Comment this line for deployed version
+# from add_data import db_execute_fetch #Comment this line for deployed version
 
 st.set_page_config(page_title="Day 5", layout="wide")
 loaded_df = None
