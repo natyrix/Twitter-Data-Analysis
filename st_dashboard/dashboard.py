@@ -4,13 +4,14 @@ import streamlit as st
 import altair as alt
 from wordcloud import WordCloud
 import plotly.express as px
-from add_data import db_execute_fetch
+from add_data import db_execute_fetch #Comment this line for deployed version
 
 st.set_page_config(page_title="Day 5", layout="wide")
 loaded_df = None
 def loadData():
     query = "select * from TweetInformation"
-    df = db_execute_fetch(query, dbName="tweets", rdf=True)
+    # df = db_execute_fetch(query, dbName="tweets", rdf=True)
+    df = pd.read_csv("./st_dashboard/processed_global_data_tweets.csv") #For deployed version
     loaded_df = df
     return df
 
@@ -24,7 +25,8 @@ def selectHashTag():
 def selectLocAndAuth():
     df = loadData() if loaded_df is None else loaded_df
     location = st.multiselect("choose Location of tweets", list(df['place'].unique()))
-    lang = st.multiselect("choose Language of tweets", list(df['language'].unique()))
+    # lang = st.multiselect("choose Language of tweets", list(df['language'].unique()))
+    lang = st.multiselect("choose Language of tweets", list(df['lang'].unique())) #For deployed version
 
     if location and not lang:
         df = df[np.isin(df, location).any(axis=1)]
@@ -68,6 +70,23 @@ def stBarChart():
     title = f"Top {num} Ranking By Number of tweets"
     barChart(dfCount.head(num), title, "original_author", "Tweet_count")
 
+def sentimentPie():
+    df = loadData() if loaded_df is None else loaded_df
+    dfSentimentCount = pd.DataFrame({'Tweet_count': df.groupby(['sentiment'])['full_text'].count()}).reset_index()
+    dfSentimentCount['source'] = dfSentimentCount['sentiment'].astype(str)
+    dfSentimentCount = dfSentimentCount.sort_values("Tweet_count", ascending=False)
+    dfSentimentCount.loc[dfSentimentCount['Tweet_count'] < 10, 'sentiment'] = 'Other Value'
+    st.title("Tweet sentiment pie chart")
+    fig = px.pie(dfSentimentCount, values='Tweet_count', names='sentiment', width=500, height=350)
+    fig.update_traces(textposition='inside', textinfo='percent+label')
+
+    colB1, colB2 = st.columns([2.5, 1])
+
+    with colB1:
+        st.plotly_chart(fig)
+    with colB2:
+        st.write(dfSentimentCount)
+
 def sourcePie():
     df = loadData() if loaded_df is None else loaded_df
     dfSourceCount = pd.DataFrame({'Tweet_count': df.groupby(['source'])['full_text'].count()}).reset_index()
@@ -87,12 +106,13 @@ def sourcePie():
 
 def langPie():
     df = loadData() if loaded_df is None else loaded_df
-    dfLangCount = pd.DataFrame({'Tweet_count': df.groupby(['language'])['full_text'].count()}).reset_index()
-    dfLangCount["language"] = dfLangCount["language"].astype(str)
+    #For deployed version replace all "language" with "lang"
+    dfLangCount = pd.DataFrame({'Tweet_count': df.groupby(['lang'])['full_text'].count()}).reset_index()
+    dfLangCount["lang"] = dfLangCount["lang"].astype(str)
     dfLangCount = dfLangCount.sort_values("Tweet_count", ascending=False)
     dfLangCount.loc[dfLangCount['Tweet_count'] < 10, 'lang'] = 'Other languages'
     st.title(" Tweets Language pie chart")
-    fig = px.pie(dfLangCount, values='Tweet_count', names='language', width=500, height=350)
+    fig = px.pie(dfLangCount, values='Tweet_count', names='lang', width=500, height=350)
     fig.update_traces(textposition='inside', textinfo='percent+label')
 
     colB1, colB2 = st.columns([2.5, 1])
@@ -110,8 +130,8 @@ selectLocAndAuth()
 st.title("Data Visualizations")
 wordCloud()
 with st.expander("Show More Graphs"):
-    stBarChart()
-    langPie()
-
-with st.expander("Show Other Graphs"):
     sourcePie()
+    stBarChart()
+    sentimentPie() #For deployed version
+    langPie()
+    
