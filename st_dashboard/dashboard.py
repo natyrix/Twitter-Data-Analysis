@@ -6,7 +6,7 @@ from wordcloud import WordCloud
 import plotly.express as px
 # from add_data import db_execute_fetch #Comment this line for deployed version
 
-st.set_page_config(page_title="Day 5", layout="wide")
+st.set_page_config(page_title="Dashboard", layout="wide")
 loaded_df = None
 def loadData():
     query = "select * from TweetInformation"
@@ -60,6 +60,28 @@ def wordCloud():
     st.title("Tweet Text Word Cloud")
     st.image(wc.to_array())
 
+def userMentionbarChart():
+    df = loadData() if loaded_df is None else loaded_df
+    df['user_mentions'] = df['user_mentions'].fillna("no_mention")
+    user_mentions_list_df = df.loc[df["user_mentions"] != ""]
+    user_mentions_list_df = user_mentions_list_df.loc[df["user_mentions"] != "no_mention"]
+    user_mentions_list_df = user_mentions_list_df['user_mentions']
+    splitted_user_mentions = []
+    for mentions_list in user_mentions_list_df:
+        mentions_list = mentions_list.split("++++")
+        for user_mentions in mentions_list:
+            if user_mentions != '':
+                splitted_user_mentions.append(user_mentions)
+    # print(splitted_user_mentions)
+    splitted_user_mentions_df = pd.DataFrame(splitted_user_mentions, columns=['user_mentions'])
+    dfUserMentionsCount = pd.DataFrame({'Tweet_count': splitted_user_mentions_df.value_counts()}).reset_index()
+    # print(splitted_user_mentions_df['user_mentions'].value())
+    # print(dfUserMentionsCount.head())
+    dfUserMentionsCount = dfUserMentionsCount.sort_values("Tweet_count", ascending=False)
+    num = st.slider("Select number of Rankings", 0, 50, 5, key=22)
+    title = f"Top {num} user mentions"
+    barChart(dfUserMentionsCount.head(num), title, "user_mentions", "Tweet_count")
+
 def stBarChart():
     df = loadData() if loaded_df is None else loaded_df
     dfCount = pd.DataFrame({'Tweet_count': df.groupby(['original_author'])['full_text'].count()}).reset_index()
@@ -86,6 +108,26 @@ def sentimentPie():
         st.plotly_chart(fig)
     with colB2:
         st.write(dfSentimentCount)
+
+def locationPie():
+    df = loadData() if loaded_df is None else loaded_df
+    df = df[df['place']!='not_known']
+    df = df[df['place']!=' ']
+    dfLocationCount = pd.DataFrame({'Tweet_count': df.groupby(['place'])['full_text'].count()}).reset_index()
+    dfLocationCount['place'] = dfLocationCount['place'].astype(str)
+    dfLocationCount = dfLocationCount[dfLocationCount['Tweet_count']>9]
+    dfLocationCount = dfLocationCount.sort_values("Tweet_count", ascending=False)
+    # dfLocationCount.loc[dfLocationCount['Tweet_count'] < 10, 'place'] = 'Other sources'
+    st.title("Top 15 tweet location pie chart")
+    fig = px.pie(dfLocationCount.head(15), values='Tweet_count', names='place', width=500, height=350)
+    fig.update_traces(textposition='inside', textinfo='percent+label')
+
+    colB1, colB2 = st.columns([2.5, 1])
+
+    with colB1:
+        st.plotly_chart(fig)
+    with colB2:
+        st.write(dfLocationCount)
 
 def sourcePie():
     df = loadData() if loaded_df is None else loaded_df
@@ -130,8 +172,10 @@ selectLocAndAuth()
 st.title("Data Visualizations")
 wordCloud()
 with st.expander("Show More Graphs"):
+    locationPie()
+    userMentionbarChart()
     sourcePie()
     stBarChart()
-    sentimentPie() #For deployed version
+    sentimentPie() #Only For deployed version
     langPie()
     
