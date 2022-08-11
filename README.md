@@ -5,7 +5,7 @@
  [Twitter-Data-Analysis](#Twitter-Data-Analysis)
   - [Introduction](#introduction)
   - [About the Data](#about-data)
-  - [How to use](#installation-guide)
+  - [How to use](#How-to-use)
   - [Project/File Structure](#project-structure)
     - [notebooks](#notebooks)
     - [st_dashboard](#dashboard)
@@ -27,7 +27,7 @@ Topic Modeling and Sentiment Analysis for Twitter Data Collected Based on the Ke
 As mentioned above the data was collected from the twitter API by using the above keywords and the pre-processed data is located on the folder st_dashboard/processed_global_data_tweets.csv, the row data was too big to push to the repo.
 </p>
 
-## Installation Guide
+## How to use
 
 To learn more about this project and play around 
         
