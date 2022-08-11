@@ -1,29 +1,55 @@
 # Twitter-Data-Analysis
 
-### So here are the bare minimum requirement for completing this task
+**Table of content**
 
-1. Use this template to create a repository called Twitter-Data-Analysis in your github account. See ["Creating a repository from a template."](https://docs.github.com/en/articles/creating-a-repository-from-a-template) for more information.
-2. [Download](https://drive.google.com/drive/folders/19G8dmehf9vU0u6VTKGV-yWsQOn3IvPsd) and extract the necessary data and put it in the data directory. The data should not not be added to git tracking.
-3. Create a branch called “bugfix” to fix the bugs in the fix_clean_tweets_dataframe.py and fix_extract_dataframe.py 
-4. In branch “bugfix” use the git mv command to rename fix_clean_tweets_dataframe.py to clean_tweets_dataframe.py and fix_extract_dataframe.py  to extract_dataframe.py 
-5. Fix the bugs on clean_tweets_dataframe.py and extract_dataframe.py 
-6. Multiple times, push the code you are working on to git, and once the fix is complete, merge the fix_bug branch to main branch
-7. Create a new branch called “testing” for updating the unit tests in the test/ folder to be applicable to the code you fixed. 
-    a. Build your unit and integration tests to run on small data (< 1 MB) that you copied from what is provided - avoid pushing large data to github
-    b. Think about the key elements (units can be functions, classes, or modules; multiple of them working together to accomplish a task requires integration testing) of the code base you are working on. Write the following
-      - Unit tests: for individual key functions and classes
-      - Integration tests: for the integration of multiple units working together
-8. After completing the unit and integration tests, merge  the “testing” branch with the main branch
-9. In all cases when you merge, make sure you first do Pull Request, review, then accept the merge.
-10. Use github actions in your repository such that when you git push new code (or merge a branch) to the main branch, the unit test in tests/*.py runs automatically. All tests should pass.
+ [Twitter-Data-Analysis](#Twitter-Data-Analysis)
+  - [Introduction](#introduction)
+  - [About the Data](#about-data)
+  - [How to use](#installation-guide)
+  - [Project/File Structure](#project-structure)
+    - [notebooks](#notebooks)
+    - [st_dashboard](#dashboard)
+    - [tests](#tests)
+    - [clean_tweets_dataframe.py](#clean_tweets_dataframe)
+    - [extract_dataframe.py](#extract_dataframe.py)
 
 
-After Completing this Challenge, you would have explore  
 
-- Unittesting
-- Modular Coding
-- Software Engineering Best Practices
-- Python Package Structure
-- Bug Fix (Debugging)
+## introduction
 
-Have Fun and Cheers
+<p>
+Topic Modeling and Sentiment Analysis for Twitter Data Collected Based on the Keywords:
+[‘chinaus’, ‘chinaTaiwan’, ‘chinaTaiwancrisis’, ‘taiwan’, ‘XiJinping’, ‘USCHINA’, ‘pelosi’, ‘TaiwanStraitsCrisis’, ‘WWIII’, ‘pelosivisittotaiwan’] 
+</p>
+
+## about-data
+<p>
+As mentioned above the data was collected from the twitter API by using the above keywords and the pre-processed data is located on the folder st_dashboard/processed_global_data_tweets.csv, the row data was too big to push to the repo.
+</p>
+
+## Installation Guide
+
+To learn more about this project and play around 
+        
+            git clone https://github.com/natyrix/Twitter-Data-Analysis.git
+
+            cd Twitter-Data-Analysis
+
+            pip install -r requirements.txt
+        
+  
+## Project Structure
+
+### notebooks 
+This folder holds the nooteboks used to read, pre-process and visualize the twitter data 
+- Data exploration and Preprocessing - holds Exploratory Data Analysis and visualizations
+- Sentiment_analyzer_and_topic_modelling - holds topic modeling and sentiment analysis
+### st_dashboard 
+This folder holds streamlit dashboard codes, including database schema
+### tests
+This folder holds unit test files, and sample_data for our CI tests
+### clean_tweets_dataframe.py
+This folder holds all the function for cleaning the raw data. 
+### extract_dataframe.py
+This folder holds all the function responsible for extracting the raw json data.
+
