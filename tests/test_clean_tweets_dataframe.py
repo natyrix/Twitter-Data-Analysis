@@ -27,6 +27,31 @@ class TestCleanTweetsDataFrame(unittest.TestCase):
     
     def test_remove_non_english_tweets(self):
         self.assertEqual(len(self.clean_df.remove_non_english_tweets(self.df)), len(self.df))
+    
+    def test_remove_place_characters(self):
+        vals =['','','Netherlands','Netherlands', 'Ayent Schweiz']
+        returned_place = [x for x in self.clean_df.remove_place_characters(self.df)['place']]
+        self.assertEqual(returned_place, vals)
+
+    def test_convert_to_numbers(self):
+        df = self.clean_df.convert_to_numbers(self.df)
+        vals = ['float64','float64', 'int64', 'int64', 'int64']
+        returned_types = [df['polarity'].dtype,df['subjectivity'].dtype,df['retweet_count'].dtype,
+            df['favorite_count'].dtype,df['followers_count'].dtype,]
+        self.assertEqual(returned_types, vals)
+    
+    def test_convert_to_datetime(self):
+        df = self.clean_df.convert_to_datetime(self.df)
+        self.assertEqual(df['created_at'].dtype, 'datetime64[ns, UTC]')
+    
+    def test_drop_duplicate(self):
+        df = self.clean_df.drop_duplicate(self.df)
+        self.assertEqual(len(df), 5)
+    
+    def test_drop_unwanted_column(self):
+        df = self.clean_df.drop_unwanted_column(self.df)
+        self.assertEqual(len(df.columns), 16)
+        
 
 
 
