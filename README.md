@@ -50,6 +50,6 @@ This folder holds streamlit dashboard codes, including database schema
 This folder holds unit test files, and sample_data for our CI tests
 ### clean_tweets_dataframe.py
 This folder holds all the function for cleaning the raw data. 
-### data
+### extract_dataframe.py
 This folder holds all the function responsible for extracting the raw json data.
 
