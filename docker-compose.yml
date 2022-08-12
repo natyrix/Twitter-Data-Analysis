@@ -1,0 +1,8 @@
+services:
+  streamlit:
+    container_name: "streamlit_d"
+    build:
+      dockerfile: ./Dockerfile
+      context: ./
+    ports:
+      - 8080
