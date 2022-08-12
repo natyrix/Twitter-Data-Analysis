@@ -2,6 +2,11 @@ import json
 import pandas as pd
 from textblob import TextBlob
 import re
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join("./scripts/")))
+from logger import logger
 
 
 def read_json(json_file: str) -> list:
@@ -17,9 +22,12 @@ def read_json(json_file: str) -> list:
     """
 
     tweets_data = []
-    for tweets in open(json_file, 'r'):
-        tweets_data.append(json.loads(tweets))
-
+    try:
+        for tweets in open(json_file, 'r'):
+            tweets_data.append(json.loads(tweets))
+        logger.info('Data Loaded')
+    except Exception as e:
+        logger.error(e)
     return len(tweets_data), tweets_data
 
 
