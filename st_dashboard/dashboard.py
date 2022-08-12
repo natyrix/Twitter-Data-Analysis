@@ -3,7 +3,12 @@ import pandas as pd
 import streamlit as st
 import altair as alt
 from wordcloud import WordCloud
-import plotly.express as px
+import plotly.express as px 
+from textblob import TextBlob
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+import pickle
+from  pages.plots import *
+
 # from add_data import db_execute_fetch #Comment this line for deployed version
 
 st.set_page_config(page_title="Dashboard", layout="wide")
@@ -41,13 +46,6 @@ def selectLocAndAuth():
     else:
         st.write(df)
 
-def barChart(data, title, X, Y):
-    title = title.title()
-    st.title(f'{title} Chart')
-    msgChart = (alt.Chart(data).mark_bar().encode(alt.X(f"{X}:N", sort=alt.EncodingSortField(field=f"{Y}", op="values",
-                order='ascending')), y=f"{Y}:Q"))
-    st.altair_chart(msgChart, use_container_width=True)
-
 def wordCloud():
     df = loadData() if loaded_df is None else loaded_df
     cleanText = ''
@@ -60,122 +58,111 @@ def wordCloud():
     st.title("Tweet Text Word Cloud")
     st.image(wc.to_array())
 
-def userMentionbarChart():
-    df = loadData() if loaded_df is None else loaded_df
-    df['user_mentions'] = df['user_mentions'].fillna("no_mention")
-    user_mentions_list_df = df.loc[df["user_mentions"] != ""]
-    user_mentions_list_df = user_mentions_list_df.loc[df["user_mentions"] != "no_mention"]
-    user_mentions_list_df = user_mentions_list_df['user_mentions']
-    splitted_user_mentions = []
-    for mentions_list in user_mentions_list_df:
-        mentions_list = mentions_list.split("++++")
-        for user_mentions in mentions_list:
-            if user_mentions != '':
-                splitted_user_mentions.append(user_mentions)
-    # print(splitted_user_mentions)
-    splitted_user_mentions_df = pd.DataFrame(splitted_user_mentions, columns=['user_mentions'])
-    dfUserMentionsCount = pd.DataFrame({'Tweet_count': splitted_user_mentions_df.value_counts()}).reset_index()
-    # print(splitted_user_mentions_df['user_mentions'].value())
-    # print(dfUserMentionsCount.head())
-    dfUserMentionsCount = dfUserMentionsCount.sort_values("Tweet_count", ascending=False)
-    num = st.slider("Select number of Rankings", 0, 50, 5, key=22)
-    title = f"Top {num} user mentions"
-    barChart(dfUserMentionsCount.head(num), title, "user_mentions", "Tweet_count")
 
-def stBarChart():
-    df = loadData() if loaded_df is None else loaded_df
-    dfCount = pd.DataFrame({'Tweet_count': df.groupby(['original_author'])['full_text'].count()}).reset_index()
-    dfCount["original_author"] = dfCount["original_author"].astype(str)
-    dfCount = dfCount.sort_values("Tweet_count", ascending=False)
-
-    num = st.slider("Select number of Rankings", 0, 50, 5)
-    title = f"Top {num} Ranking By Number of tweets"
-    barChart(dfCount.head(num), title, "original_author", "Tweet_count")
-
-def sentimentPie():
-    df = loadData() if loaded_df is None else loaded_df
-    dfSentimentCount = pd.DataFrame({'Tweet_count': df.groupby(['sentiment'])['full_text'].count()}).reset_index()
-    dfSentimentCount['source'] = dfSentimentCount['sentiment'].astype(str)
-    dfSentimentCount = dfSentimentCount.sort_values("Tweet_count", ascending=False)
-    dfSentimentCount.loc[dfSentimentCount['Tweet_count'] < 10, 'sentiment'] = 'Other Value'
-    st.title("Tweet sentiment pie chart")
-    fig = px.pie(dfSentimentCount, values='Tweet_count', names='sentiment', width=500, height=350)
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-
-    colB1, colB2 = st.columns([2.5, 1])
-
-    with colB1:
-        st.plotly_chart(fig)
-    with colB2:
-        st.write(dfSentimentCount)
-
-def locationPie():
-    df = loadData() if loaded_df is None else loaded_df
-    df = df[df['place']!='not_known']
-    df = df[df['place']!=' ']
-    dfLocationCount = pd.DataFrame({'Tweet_count': df.groupby(['place'])['full_text'].count()}).reset_index()
-    dfLocationCount['place'] = dfLocationCount['place'].astype(str)
-    dfLocationCount = dfLocationCount[dfLocationCount['Tweet_count']>9]
-    dfLocationCount = dfLocationCount.sort_values("Tweet_count", ascending=False)
-    # dfLocationCount.loc[dfLocationCount['Tweet_count'] < 10, 'place'] = 'Other sources'
-    st.title("Top 15 tweet location pie chart")
-    fig = px.pie(dfLocationCount.head(15), values='Tweet_count', names='place', width=500, height=350)
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-
-    colB1, colB2 = st.columns([2.5, 1])
-
-    with colB1:
-        st.plotly_chart(fig)
-    with colB2:
-        st.write(dfLocationCount)
-
-def sourcePie():
-    df = loadData() if loaded_df is None else loaded_df
-    dfSourceCount = pd.DataFrame({'Tweet_count': df.groupby(['source'])['full_text'].count()}).reset_index()
-    dfSourceCount['source'] = dfSourceCount['source'].astype(str)
-    dfSourceCount = dfSourceCount.sort_values("Tweet_count", ascending=False)
-    dfSourceCount.loc[dfSourceCount['Tweet_count'] < 10, 'source'] = 'Other sources'
-    st.title("Tweet source pie chart")
-    fig = px.pie(dfSourceCount, values='Tweet_count', names='source', width=500, height=350)
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-
-    colB1, colB2 = st.columns([2.5, 1])
-
-    with colB1:
-        st.plotly_chart(fig)
-    with colB2:
-        st.write(dfSourceCount)
-
-def langPie():
-    df = loadData() if loaded_df is None else loaded_df
-    #For deployed version replace all "language" with "lang"
-    dfLangCount = pd.DataFrame({'Tweet_count': df.groupby(['lang'])['full_text'].count()}).reset_index()
-    dfLangCount["lang"] = dfLangCount["lang"].astype(str)
-    dfLangCount = dfLangCount.sort_values("Tweet_count", ascending=False)
-    dfLangCount.loc[dfLangCount['Tweet_count'] < 10, 'lang'] = 'Other languages'
-    st.title(" Tweets Language pie chart")
-    fig = px.pie(dfLangCount, values='Tweet_count', names='lang', width=500, height=350)
-    fig.update_traces(textposition='inside', textinfo='percent+label')
-
-    colB1, colB2 = st.columns([2.5, 1])
-
-    with colB1:
-        st.plotly_chart(fig)
-    with colB2:
-        st.write(dfLangCount)
+def trainModelTest():
+    st.markdown("<p style='padding:10px; background-color:#000320;color:#00ECB9;font-size:16px;border-radius:10px;'>Your CSV file should have 'full_text' as a column</p>", unsafe_allow_html=True)
+    uploaded_file = st.file_uploader("Choose a CSV file")
+    try:
+        if uploaded_file is not None:
+            print(uploaded_file.type)
+            if uploaded_file.type == 'text/csv':
+                df = pd.read_csv(uploaded_file)
+                df['full_text'] = df['full_text'].apply(
+                    lambda text: text.replace(',', ' ')
+                )
+                df['polarity'] = getPolarity(df['full_text'])
+                processed_df = df[["full_text", "polarity"]]
+                def applyConvert(val):
+                    if val < 0:
+                        return "negative"
+                    elif val == 0:
+                        return "neutral"
+                    else:
+                        return "positive"
+                processed_df['score'] = processed_df['polarity'].apply(applyConvert)
+                processed_df = processed_df[processed_df['score']!="neutral"]
+                processed_df['scoremap'] = processed_df['score'].map(
+                    lambda val: 1 if "positive" else 0
+                )
+                (X, y) = processed_df['full_text'], processed_df['scoremap']
+                trigram_vectorizer = CountVectorizer(ngram_range=(1, 3))
+                trigram_vectorizer.fit(X.values)
+                X_trigram_vectorizer = trigram_vectorizer.transform(X.values)
+                loaded_model = None
+                loaded_X_test = None
+                loaded_y_test = None
+                with open('./st_dashboard/model.pkl', 'rb') as f:
+                    loaded_model = pickle.load(f)
+                with open("./st_dashboard/X_test.pkl", 'rb') as f:
+                    loaded_X_test = pickle.load(f)
 
 
-st.title("Data Display")
-selectHashTag()
-st.markdown("<p style='padding:10px; background-color:#000000;color:#00ECB9;font-size:16px;border-radius:10px;'>Section Break</p>", unsafe_allow_html=True)
-selectLocAndAuth()
-st.title("Data Visualizations")
-wordCloud()
-with st.expander("Show More Graphs"):
+                with open("./st_dashboard/y_test.pkl", 'rb') as f:
+                    loaded_y_test = pickle.load(f)
+                if loaded_model is not None:
+                    # print(X_trigram_vectorizer)
+                    # print(loaded_model.predict(X_trigram_vectorizer))
+                    test_score = loaded_model.score(loaded_X_test, loaded_y_test)
+                    st.write(f'Test score: {round(test_score, 2)}')
+                else:
+                    st.write("No model found to test.")
+        else:
+            st.write("Only .csv file is allowed")
+    except Exception as e:
+        msg = str(e)
+        print(msg)
+        st.write(msg)
+
+
+def getPolarity(text: str):
+    polarity = []
+    for t in text:
+        each_sentiment = TextBlob(t).sentiment
+        polarity.append(each_sentiment.polarity)
+    return polarity
+
+
+def findFullText(df: pd.DataFrame):
+    print(len(df))
+    text = [d['full_text'] for d in df]
+    text = [d['full_text'].replace(',', ' ')
+            for d in df.iteritems()]
+    return text
+
+def mainPage():
+    st.title("Data Display")
+    selectHashTag()
+    st.markdown("<p style='padding:10px; background-color:#000000;color:#00ECB9;font-size:16px;border-radius:10px;'>Section Break</p>", unsafe_allow_html=True)
+    selectLocAndAuth()
+    wordCloud()
+    # with st.expander("Show More Graphs"):
+    #     locationPie()
+    #     userMentionbarChart()
+    #     sourcePie()
+    #     stBarChart()
+    #     sentimentPie() #Only For deployed version
+    #     langPie()
+    
+    with st.expander("Test the trained model with a csv file"):
+        trainModelTest()
+
+def plots():
+    # st.markdown("# Data Visualizations ❄️")
+    st.sidebar.markdown("# Data Visualizations ❄️")
+    st.title("Data Visualizations")
+
     locationPie()
     userMentionbarChart()
     sourcePie()
     stBarChart()
     sentimentPie() #Only For deployed version
     langPie()
-    
+
+
+page_names_to_funcs = {
+    "Main Page": mainPage,
+    "Data Visualizations": plots,
+} 
+
+selected_page = st.sidebar.selectbox("Select a page", page_names_to_funcs.keys())
+page_names_to_funcs[selected_page]()
