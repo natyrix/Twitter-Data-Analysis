@@ -6,6 +6,7 @@
   - [Introduction](#introduction)
   - [About the Data](#about-data)
   - [How to use](#How-to-use)
+  - [Dashboard](#dashboard)
   - [Project/File Structure](#project-structure)
     - [notebooks](#notebooks)
     - [st_dashboard](#dashboard)
@@ -36,7 +37,18 @@ To learn more about this project and play around
             cd Twitter-Data-Analysis
 
             pip install -r requirements.txt
+
+
+## Dashboard
+
+To run the streamlit dashboard 
         
+            pip install -r requirements.txt
+
+            streamlit run st_dashboard/dashboard.py
+        
+
+
   
 ## Project Structure
 
